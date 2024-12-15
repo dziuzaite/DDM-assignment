@@ -4,9 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import ttest_rel
-import logging
-
-logging.basicConfig(level=logging.WARNING)
 
 # Load the dataset
 df = pd.read_csv("dataset-14 - Copy.tsv", sep='\t')
