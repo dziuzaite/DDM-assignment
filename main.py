@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import ttest_rel
 
-# Load the dataset
+# load the dataset
 df = pd.read_csv("dataset-14 - Copy.tsv", sep='\t')
 
-# Calculate accuracy (1 for correct response, 0 for incorrect)
+# calculate accuracy (1 for correct response, 0 for incorrect)
 df['accuracy'] = np.where(df['R'] == df['S'], 1, 0)
 
-# 1) Histogram of Frequency of Reaction Times in Raw Data
+# 1) histogram of frequency of reaction times in raw data
 plt.figure(figsize=(12, 6))
 plt.hist(df['rt'], bins=30, color='skyblue', edgecolor='black', alpha=0.7)
 plt.title('Histogram of Reaction Times (RT) in Raw Data')
@@ -19,8 +19,8 @@ plt.xlabel('Reaction Time (s)')
 plt.ylabel('Frequency')
 plt.show()
 
-# 2) Histogram of Frequency of Reaction Times in Data Without Outliers
-# Remove outliers using IQR (Interquartile Range)
+# 2) histogram of frequency of reaction times in data without outliers
+# remove outliers using iqr (interquartile range)
 Q1 = df['rt'].quantile(0.25)
 Q3 = df['rt'].quantile(0.75)
 IQR = Q3 - Q1
@@ -36,7 +36,7 @@ plt.xlabel('Reaction Time (s)')
 plt.ylabel('Frequency')
 plt.show()
 
-# 3) Histogram and Density Plot of Reaction Times for Correct (1) and Incorrect (0) Responses
+# 3) histogram and density plot of reaction times for correct (1) and incorrect (0) responses
 plt.figure(figsize=(12, 6))
 for accuracy_val in [0, 1]:
     subset = df[df['accuracy'] == accuracy_val]
@@ -57,7 +57,7 @@ plt.ylabel('Density')
 plt.legend(title='Accuracy')
 plt.show()
 
-# 4) Histogram and Density Plot of Reaction Times for Conditions
+# 4) histogram and density plot of reaction times for conditions
 plt.figure(figsize=(12, 6))
 for condition in ['speed', 'accuracy']:
     subset = df[df['instruction'] == condition]
@@ -78,8 +78,8 @@ plt.ylabel('Density')
 plt.legend(title='Condition')
 plt.show()
 
-# 5) Visualize aggregated (median) RTs per subject and condition
-# Calculate median reaction times
+# 5) visualize aggregated (median) rts per subject and condition
+# calculate median reaction times
 median_rt = df.groupby(['subjects', 'instruction']).agg(median_rt=('rt', 'median')).reset_index()
 
 plt.figure(figsize=(12, 6))
@@ -99,20 +99,20 @@ plt.xticks(ticks=median_rt['subjects'].unique(), labels=median_rt['subjects'].un
 plt.legend(title='Condition')
 plt.show()
 
-# 6) Paired t-tests for Reaction Times and Accuracy
+# 6) paired t-tests for reaction times and accuracy
 
-# Pair reaction times per subject for each condition
+# pair reaction times per subject for each condition
 rt_speed = df[df['instruction'] == 'speed'].groupby('subjects')['rt'].mean()
 rt_accuracy = df[df['instruction'] == 'accuracy'].groupby('subjects')['rt'].mean()
 
-# Drop subjects without data for both conditions (just in case)
+# drop subjects without data for both conditions (just in case)
 paired_data = pd.DataFrame({'speed': rt_speed, 'accuracy': rt_accuracy}).dropna()
 
-# Perform the paired t-test for reaction times
+# perform the paired t-test for reaction times
 t_stat_rt, p_value_rt = ttest_rel(paired_data['speed'], paired_data['accuracy'])
 print(f"Paired t-test for reaction times: t = {t_stat_rt:.2f}, p = {p_value_rt:.3e}")
 
-# Visualize mean RTs per condition
+# visualize mean rts per condition
 plt.figure(figsize=(8, 6))
 mean_rts = paired_data.mean()
 plt.bar(mean_rts.index, mean_rts.values, color=['blue', 'purple'], alpha=0.7)
@@ -122,18 +122,18 @@ plt.xlabel('Condition')
 plt.xticks(ticks=[0, 1], labels=['Speed', 'Accuracy'])
 plt.show()
 
-# Pair accuracy per subject for each condition
+# pair accuracy per subject for each condition
 accuracy_speed = df[df['instruction'] == 'speed'].groupby('subjects')['accuracy'].mean()
 accuracy_accuracy = df[df['instruction'] == 'accuracy'].groupby('subjects')['accuracy'].mean()
 
-# Drop subjects without data for both conditions (just in case)
+# drop subjects without data for both conditions (just in case)
 paired_accuracy = pd.DataFrame({'speed': accuracy_speed, 'accuracy': accuracy_accuracy}).dropna()
 
-# Perform the paired t-test for accuracy
+# perform the paired t-test for accuracy
 t_stat_accuracy, p_value_accuracy = ttest_rel(paired_accuracy['speed'], paired_accuracy['accuracy'])
 print(f"Paired t-test for accuracy: t = {t_stat_accuracy:.2f}, p = {p_value_accuracy:.3e}")
 
-# Visualize mean accuracy per condition
+# visualize mean accuracy per condition
 plt.figure(figsize=(8, 6))
 mean_accuracy = paired_accuracy.mean()
 plt.bar(mean_accuracy.index, mean_accuracy.values, color=['blue', 'purple'], alpha=0.7)
@@ -146,18 +146,18 @@ plt.show()
 
 T_dur = 4.0
 
-# FAST Condition
+# FAST condition
 m_fast = pyddm.Model(
-    drift=pyddm.DriftConstant(drift=1.0),  # Hypothetical drift rate
+    drift=pyddm.DriftConstant(drift=1.0),  # hypothetical drift rate
     noise=pyddm.NoiseConstant(noise=0.8),
-    bound=pyddm.BoundConstant(B=0.8),  # Smaller bounds for speed
-    overlay=pyddm.OverlayNonDecision(nondectime=0.2),  # Hypothetical non-decision time
+    bound=pyddm.BoundConstant(B=0.8),  # smaller bounds for speed
+    overlay=pyddm.OverlayNonDecision(nondectime=0.2),  # hypothetical non-decision time
     T_dur=T_dur
 )
 sol_fast = m_fast.solve()
 sample_fast = sol_fast.resample(10000)
 
-# Plot correct and error RT distributions for FAST
+# plot correct and error rt distributions for fast
 correct_rts_fast = sample_fast.corr
 error_rts_fast = sample_fast.err
 
@@ -171,12 +171,12 @@ plt.title("FAST - Error RT distribution")
 plt.tight_layout()
 plt.show()
 
-# b) Infinite Simulations and PDFs
+# b) infinite simulations and pdfs
 # Infinite trials for FAST
 correct_pdf_fast = sol_fast.pdf("correct")
 error_pdf_fast = sol_fast.pdf("error")
 
-# Plot
+# plot
 plt.figure(figsize=(10, 6))
 ax1 = plt.subplot(2, 1, 1)
 plt.plot(m_fast.t_domain(), correct_pdf_fast)
@@ -187,26 +187,26 @@ plt.title("FAST - Error RT density")
 plt.tight_layout()
 plt.show()
 
-# c) Fitting DDM to Your Dataset
-# Mapping both 'S' and 'R' columns to 1 and 0 for compatibility with PyDDM
-df['S'] = df['S'].map({'left': 1, 'right': 0})  # Stimulus column mapping
-df['R'] = df['R'].map({'left': 1, 'right': 0})  # Response column mapping
+# c) fitting ddm to your dataset
+# mapping both 's' and 'r' columns to 1 and 0 for compatibility with pyddm
+df['S'] = df['S'].map({'left': 1, 'right': 0})  # stimulus column mapping
+df['R'] = df['R'].map({'left': 1, 'right': 0})  # response column mapping
 
-# Calculate the maximum response time in the dataset
+# calculate the maximum response time in the dataset
 max_rt = df['rt'].max()
 
-# Set T_dur to be at least as long as the max response time, with an optional buffer (e.g., 10%)
-T_dur = max_rt * 1.1  # Add a small buffer to max RT to ensure sufficient simulation time
+# set t_dur to be at least as long as the max response time, with an optional buffer (e.g., 10%)
+T_dur = max_rt * 1.1  # add a small buffer to max RT to ensure sufficient simulation time
 
-# Split by condition
+# split by condition
 df_fast = df[df['instruction'] == "speed"]
 df_acc = df[df['instruction'] == "accuracy"]
 
-# Convert to PyDDM Sample
+# convert to PyDDM Sample
 sample_fast = pyddm.Sample.from_pandas_dataframe(df_fast, rt_column_name="rt", choice_column_name="R")
 sample_acc = pyddm.Sample.from_pandas_dataframe(df_acc, rt_column_name="rt", choice_column_name="R")
 
-# Create model for the 'FAST' condition
+# create model for the 'FAST' condition
 m_fit_fast = pyddm.Model(
     drift=pyddm.DriftConstant(drift=pyddm.Fittable(minval=-5, maxval=5)),
     noise=pyddm.NoiseConstant(noise=pyddm.Fittable(minval=0.1, maxval=2)),
@@ -215,10 +215,10 @@ m_fit_fast = pyddm.Model(
     T_dur=T_dur
 )
 
-# Fit the 'FAST' model
+# fit the 'FAST' model
 pyddm.fit_adjust_model(model=m_fit_fast, sample=sample_fast, lossfunction=pyddm.LossRobustLikelihood, verbose=True)
 
-# Create model for the 'ACCURATE' condition
+# create model for the 'ACCURATE' condition
 m_fit_acc = pyddm.Model(
     drift=pyddm.DriftConstant(drift=pyddm.Fittable(minval=-5, maxval=5)),
     noise=pyddm.NoiseConstant(noise=pyddm.Fittable(minval=0.1, maxval=2)),
@@ -227,18 +227,18 @@ m_fit_acc = pyddm.Model(
     T_dur=T_dur  # Set the T_dur to the calculated value
 )
 
-# Fit the 'ACCURATE' model
+# fit the 'ACCURATE' model
 pyddm.fit_adjust_model(model=m_fit_acc, sample=sample_acc, lossfunction=pyddm.LossRobustLikelihood, verbose=True)
 
-# Display the 'FAST' condition model
+# display the 'FAST' condition model
 print("model for the 'FAST' condition:")
 pyddm.display_model(m_fit_fast)
 
-# Display the 'ACCURATE' condition model
+# display the 'ACCURATE' condition model
 print("model for the 'ACCURATE' condition:")
 pyddm.display_model(m_fit_acc)
 
-# Example values from your model output (from the printed results)
+# example values from your model output (from the printed results)
 params_fast = {
     'drift': 0.014136,
     'noise': 1.520159,
@@ -253,23 +253,23 @@ params_accurate = {
     'nondectime': 0.200614
 }
 
-# Prepare data for plotting
+# prepare data for plotting
 parameters = ['drift', 'noise', 'B', 'nondectime']
 fast_values = [params_fast[param] for param in parameters]
 accurate_values = [params_accurate[param] for param in parameters]
 
-# Create a figure and axis for the plots
+# create a figure and axis for the plots
 fig, ax = plt.subplots(1, 1, figsize=(8, 6))
 
-# Plot the parameters for the FAST and ACCURATE conditions
+# plot the parameters for the FAST and ACCURATE conditions
 ax.scatter(parameters, fast_values, label='FAST', color='blue', marker='o', s=100)
 ax.scatter(parameters, accurate_values, label='ACCURATE', color='red', marker='x', s=100)
 
-# Add labels, title, and legend
+# add labels, title, and legend
 ax.set_xlabel('Parameters')
 ax.set_ylabel('Fitted Value')
 ax.set_title('DDM Parameters: FAST vs ACCURATE Condition')
 ax.legend()
 
-# Show the plot
+# show the plot
 plt.show()
